@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="hu" xmlns:sec="http://www.w3.org/1999/xhtml">
+<header>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kapcsolatfelvétel</title>
+    <div class="user_type">
+        <p sec:authorize="isAnonymous()">Látogató</p>
+        <p sec:authorize="isAuthenticated()" sec:authentication="name"></p>
+    </div>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/main.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/contact.css}">
+    <div class="logo">
+        <h1>Kapcsolatfelvételi Űrlap</h1>
+    </div>
+    <div id="notification" class="notification hidden">
+        <span id="notification-message"></span>
+        <button id="notification-close-btn"> X</button>
+    </div>
+    <nav>
+        <ul>
+            <li><a th:href="@{/}">Főoldal</a></li>
+            <li><a th:href="@{/meccsek}">Meccsek</a></li>
+            <li><a th:href="@{/nezok}">Nézők</a></li>
+            <li><a th:href="@{/belepes}" sec:authorize="hasRole('ADMIN')">Belépések</a></li>
+            <li><a th:href="@{/contact}">Kapcsolat</a></li>
+            <li><a th:href="@{/uzenetek}" sec:authorize="hasRole('ADMIN')">Üzenetek</a></li>
+            <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Bejelentkezés</a></li>
+            <li><a th:href="@{/register}" sec:authorize="!isAuthenticated()">Regisztráció</a></li>
+            <li><a th:href="@{/logout}" sec:authorize="isAuthenticated()">Kijelentkezés</a></li>
+        </ul>
+    </nav>
+</header>
+<body>
+<h2>Kapcsolati űrlap</h2>
+<div class="container mb-3">
+    <form th:action="@{/contact/send-message}" method="post">
+        <div class="form-group">
+            <label for="sender">Név:</label>
+            <input type="text" id="sender" name="sender" placeholder="Írja be a nevét" sec:authorize="isAnonymous()" required>
+            <p sec:authorize="isAuthenticated()" sec:authentication="name"></p>
+        </div>
+        <div class="form-group">
+            <label for="content">Üzenet:</label>
+            <textarea id="content" name="content" placeholder="Írja be üzenetét" required></textarea>
+        </div>
+        <div class="form-group">
+            <button type="submit">Üzenet küldése</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

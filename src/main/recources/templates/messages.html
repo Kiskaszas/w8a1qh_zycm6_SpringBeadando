@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<header>
+    <title>Üzenetek</title>
+    <div class="user_type">
+        <p sec:authorize="isAnonymous()">Látogató</p>
+        <p sec:authorize="isAuthenticated()" sec:authentication="name"></p>
+    </div>
+    <div class="logo">
+        <h1>Üzenetek</h1>
+    </div>
+    <div id="notification" class="notification hidden">
+        <span id="notification-message"></span>
+        <button id="notification-close-btn"> X</button>
+    </div>
+    <nav>
+        <ul>
+            <li><a th:href="@{/}">Főoldal</a></li>
+            <li><a th:href="@{/meccsek}">Meccsek</a></li>
+            <li><a th:href="@{/nezok}">Nézők</a></li>
+            <li><a th:href="@{/belepes}" sec:authorize="hasRole('ADMIN')">Belépések</a></li>
+            <li><a th:href="@{/contact}" sec:authorize="hasRole('USER')">Kapcsolat</a></li>
+            <li><a th:href="@{/uzenetek}" sec:authorize="hasRole('ADMIN')">Üzenetek</a></li>
+            <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Bejelentkezés</a></li>
+            <li><a th:href="@{/register}" sec:authorize="!isAuthenticated()">Regisztráció</a></li>
+            <li><a th:href="@{/logout}" sec:authorize="isAuthenticated()">Kijelentkezés</a></li>
+        </ul>
+    </nav>
+</header>
+    <body>
+        <h2>Elküldött Üzenetek</h2>
+        <div class="mb-3">
+            <label for="searchInput"></label>
+            <input type="text" id="searchInput" class="form-control" placeholder="Üzenetek keresése...">
+        </div>
+        <table id="messageSearch">
+            <thead>
+            <tr>
+                <th>Küldő</th>
+                <th>Üzenet</th>
+                <th>Küldés ideje</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="message : ${messages}">
+                <td th:text="${message.sender}"></td>
+                <td th:text="${message.content}"></td>
+                <td th:text="${message.sentAt}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

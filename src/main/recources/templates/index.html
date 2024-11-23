@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Meccsek</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<header>
+    <div class="user_type">
+        <p sec:authorize="isAnonymous()">Látogató</p>
+        <p sec:authorize="isAuthenticated()" sec:authentication="name"></p>
+    </div>
+    <div class="logo">
+        <h1>Football Meccsek</h1>
+    </div>
+    <nav>
+        <ul>
+            <li><a th:href="@{/}">Főoldal</a></li>
+            <li><a th:href="@{/meccsek}">Meccsek</a></li>
+            <li><a th:href="@{/nezok}">Nézők</a></li>
+            <li><a th:href="@{/belepes}" sec:authorize="hasRole('ADMIN')">Belépések</a></li>
+            <li><a th:href="@{/contact}">Kapcsolat</a></li>
+            <li><a th:href="@{/uzenetek}" sec:authorize="hasRole('ADMIN')">Üzenetek</a></li>
+            <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Bejelentkezés</a></li>
+            <li><a th:href="@{/register}" sec:authorize="!isAuthenticated()">Regisztráció</a></li>
+            <li><a th:href="@{/logout}" sec:authorize="isAuthenticated()">Kijelentkezés</a></li>
+        </ul>
+    </nav>
+</header>
+
+<section class="hero">
+    <div class="hero-content">
+        <h2>Üdvözöljük a Football mérkőzések világában!</h2>
+        <p>Cégünk minden szurkoló számára elhozza a legizgalmasabb futballmeccseket és a felejthetetlen élményeket.</p>
+        <a href="#" class="cta-button">Tudj meg többet</a>
+    </div>
+</section>
+
+<section class="about-us">
+    <div class="hero-content">
+        <h2>Rólunk</h2>
+        <p>
+            A KaszMag-Innovate csapata azon dolgozik, hogy a szurkolókat közelebb hozza kedvenc csapataikhoz.
+            Szervezünk meccseket, közvetítünk jegyeket, és teljes futballélményt biztosítunk a nézőinknek.
+        </p>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature">
+        <h3>Izgalmas Meccsek</h3>
+        <p>A legjobb bajnokságok és helyi mérkőzések mind egy helyen.</p>
+    </div>
+    <div class="feature">
+        <h3>Szurkolói Élmények</h3>
+        <p>A nézők számára VIP belépők és szurkolói klubok.</p>
+    </div>
+    <div class="feature">
+        <h3>Könnyű Jegyvásárlás</h3>
+        <p>Gyors és egyszerű jegyvásárlás minden meccsre online felületen keresztül.</p>
+    </div>
+</section>
+
+<footer>
+    <p>2024 <span th:text="${companyInfo}"/>. Minden jog fenntartva.</p>
+</footer>
+
+</body>
+</html>

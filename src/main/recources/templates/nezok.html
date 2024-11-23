@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns="http://www.w3.org/1999/html">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <title>Nézők kezelése</title>
+</head>
+<body>
+<header>
+  <div id="notification" class="notification hidden">
+    <span id="notification-message"></span>
+    <button id="notification-close-btn"> X</button>
+  </div>
+    <div class="user_type">
+      <p sec:authorize="isAnonymous()">Látogató</p>
+      <p sec:authorize="isAuthenticated()" sec:authentication="name"></p>
+    </div>
+    <div class="logo">
+      <h1>Nézők</h1>
+    </div>
+    <nav>
+      <ul>
+        <li><a th:href="@{/}">Főoldal</a></li>
+        <li><a th:href="@{/meccsek}">Meccsek</a></li>
+        <li><a th:href="@{/nezok}">Nézők</a></li>
+        <li><a th:href="@{/belepes}" sec:authorize="hasRole('ADMIN')">Belépések</a></li>
+        <li><a th:href="@{/contact}" sec:authorize="hasRole('USER')">Kapcsolat</a></li>
+        <li><a th:href="@{/uzenetek}" sec:authorize="hasRole('ADMIN')">Üzenetek</a></li>
+        <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Bejelentkezés</a></li>
+        <li><a th:href="@{/register}" sec:authorize="!isAuthenticated()">Regisztráció</a></li>
+        <li><a th:href="@{/logout}" sec:authorize="isAuthenticated()">Kijelentkezés</a></li>
+      </ul>
+    </nav>
+</header>
+
+<main class="container mt-4">
+  <!-- Szűrő beviteli mező -->
+  <div class="mb-3">
+    <input type="text" id="searchInput" class="form-control" placeholder="Nézők keresése...">
+  </div>
+
+  <!-- Nézők táblázata -->
+  <table class="table table-hover football-table viewer-table mb-2">
+    <thead>
+    <tr>
+      <th>Név</th>
+      <th>Email</th>
+      <th>Telefonszám</th>
+      <th sec:authorize="hasRole('ADMIN')"></th>
+      <th sec:authorize="hasRole('ADMIN')"></th>
+      <th sec:authorize="hasRole('ADMIN')">Műveletek</th>
+    </tr>
+    </thead>
+    <tbody id="nezoktable">
+    <tr th:each="nezo : ${nezok}">
+      <td th:text="${nezo.nev}"></td>
+      <td th:if="${nezo.ferfi == true}" class="sym_td_copied" to_copy="✅">✅</td>
+      <td th:if="${nezo.ferfi == false}" class="sym_td_copied" to_copy="❌">❌</td>
+      <td th:if="${nezo.berletes == true}" class="sym_td_copied" to_copy="✅">✅</td>
+      <td th:if="${nezo.berletes == false}" class="sym_td_copied" to_copy="❌">❌</td>
+      <td sec:authorize="hasRole('ADMIN')"></td>
+      <td sec:authorize="hasRole('ADMIN')"></td>
+      <td sec:authorize="hasRole('ADMIN')" th:colspan="2">
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateModal" th:data-id="${nezo.id}">Módosítás</button>
+        <button class="btn btn-danger btn-sm" id="deleteOptionBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" th:data-id="${nezo.id}">Törlés</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <nav>
+    <ul class="pagination justify-content-center">
+      <li class="page-item" th:classappend="${pageNumber == 0} ? 'disabled'">
+        <a class="page-link" th:href="@{/nezok(page=${pageNumber-1})}">Előző</a>
+      </li>
+      <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages-1)}" th:classappend="${pageNumber == i} ? 'active'">
+        <a class="page-link" th:href="@{/nezok(page=${i})}" th:text="${i+1}">1</a>
+      </li>
+      <li class="page-item" th:classappend="${pageNumber == totalPages-1} ? 'disabled'">
+        <a class="page-link" th:href="@{/nezok(page=${pageNumber+1})}">Következő</a>
+      </li>
+    </ul>
+  </nav>
+</main>
+
+<!-- Módosítás Modal-->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateModalLabel">Néző módosítása</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="updateModalForm" th:action="@{/nezo/update/{id}(id=${nezo.id})}" method="post">
+          <input type="hidden" name="_method" value="put"/>
+          <input type="hidden" id="updateNezoId" name="id" th:value="${nezo.id}"/>
+          <input type="hidden" id="updateNezoNev" name="nev" th:value="${nezo.getNev()}">
+          <!-- Név mező -->
+          <div class="mb-3">
+            <label class="form-label">Név:</label>
+            <input type="text" class="form-control" name="nev" id="nev" readonly required>
+          </div>
+
+          <!-- Férfi mező -->
+          <div class="mb-3">
+            <label class="form-label">Férfi: </label>
+            <input type="checkbox" id="ferfi" name="ferfi" th:checked="${ferfi} ? 'checked' : ''" />
+          </div>
+
+          <!-- Bérletes mező -->
+          <div class="mb-3">
+            <label for="berletes" class="form-label">Bérletes: </label>
+            <input type="checkbox" id="berletes" name="berletes" th:checked="${berletes} ? 'true' : 'false'">
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="updateBtn">Módosítás</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégsem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Törlés Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Néző törlése</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Biztosan törölni szeretné a néző adatait?</p>
+      </div>
+      <div class="modal-footer">
+        <form id="deleteModalForm" th:action="@{/football/nezo/{deleteNezoId}(deleteNezoId=${deleteNezoId})}" method="post">
+          <input type="hidden" name="_method" value="delete"/>
+          <input type="hidden" id="deleteNezoId" name="id" th:value="${deleteNezoId}">
+          <button type="submit" class="btn btn-danger">Igen</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Nem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS for functionality -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/nezo.js}"></script>
+</body>
+</html>

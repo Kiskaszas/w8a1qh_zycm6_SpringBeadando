@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Meccsek kezelése</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<header>
+    <div class="user_type">
+        <p sec:authorize="isAnonymous()">Látogató</p>
+        <p sec:authorize="isAuthenticated()" sec:authentication="name"></p>
+    </div>
+    <div class="logo">
+        <h1>Meccsek</h1>
+    </div>
+    <div id="notification" class="notification hidden">
+        <span id="notification-message"></span>
+        <button id="notification-close-btn"> X</button>
+    </div>
+    <nav>
+        <ul>
+            <li><a th:href="@{/}">Főoldal</a></li>
+            <li><a th:href="@{/meccsek}">Meccsek</a></li>
+            <li><a th:href="@{/nezok}">Nézők</a></li>
+            <li><a th:href="@{/belepes}" sec:authorize="hasRole('ADMIN')">Belépések</a></li>
+            <li><a th:href="@{/contact}" sec:authorize="hasRole('USER')">Kapcsolat</a></li>
+            <li><a th:href="@{/uzenetek}" sec:authorize="hasRole('ADMIN')">Üzenetek</a></li>
+            <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Bejelentkezés</a></li>
+            <li><a th:href="@{/register}" sec:authorize="!isAuthenticated()">Regisztráció</a></li>
+            <li><a th:href="@{/logout}" sec:authorize="isAuthenticated()">Kijelentkezés</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container mt-4">
+    <div class="mb-3">
+        <label for="searchInput"></label>
+        <input type="text" id="searchInput" class="form-control" placeholder="Meccsek keresése...">
+    </div>
+
+    <table class="table table-hover football-table mb-2" th:if="${totalPages > 0}">
+        <thead>
+        <tr>
+            <th>Dátum</th>
+            <th>Kezdés</th>
+            <th>Belépő</th>
+            <th>Típus</th>
+            <th sec:authorize="hasRole('ADMIN')"></th>
+            <th sec:authorize="hasRole('ADMIN')"></th>
+            <th sec:authorize="hasRole('ADMIN')">Műveletek</th>
+        </tr>
+        </thead>
+        <tbody id="meccsTable">
+        <tr th:each="meccs : ${meccsek}">
+            <td th:text="${meccs.datum}"></td>
+            <td th:text="${meccs.kezdes}"></td>
+            <td th:text="${meccs.belepo}"></td>
+            <td th:text="${meccs.tipus}"></td>
+            <td sec:authorize="hasRole('ADMIN')"></td>
+            <td sec:authorize="hasRole('ADMIN')"></td>
+            <td sec:authorize="hasRole('ADMIN')" th:colspan="2">
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateModal" th:data-id="${meccs.id}">Módosítás</button>
+                <button class="btn btn-danger btn-sm" id="deleteOptionBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" th:data-id="${meccs.id}">Törlés</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p class="nincsMeccs" th:if="${totalPages==0}">Nem találhatóak mérkőzések</p>
+
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${pageNumber == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{/meccsek(page=${pageNumber-1})}">Előző</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages-1)}" th:classappend="${pageNumber == i} ? 'active'">
+                <a class="page-link" th:href="@{/meccsek(page=${i})}" th:text="${i+1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${pageNumber == totalPages-1} ? 'disabled'">
+                <a class="page-link" th:href="@{/meccsek(page=${pageNumber+1})}">Következő</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+
+<!-- Módosítás Modal-->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalLabel">Meccs módosítása</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateModalForm" th:action="@{/meccs/update/{updateMeccsId}(updateMeccsId=${meccs.getId()})}" method="post">
+                    <input type="hidden" name="_method" value="put"/>
+                    <input type="hidden" id="updateMeccsId" name="id" th:value="${meccs.getId()}">
+                    <div class="mb-3">
+                        <label for="datum" class="form-label">Dátum</label>
+                        <input type="date" class="form-control" id="datum" name="datum" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="kezdes" class="form-label">Kezdés</label>
+                        <input type="time" class="form-control" id="kezdes" name="kezdes" th:value="${meccs.getKezdes()}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="belepo" class="form-label">Belépő</label>
+                        <input type="number" class="form-control" id="belepo" name="belepo" th:value="${meccs.getBelepo()}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipus" class="form-label">Típus</label>
+                        <input type="text" class="form-control" id="tipus" name="tipus" th:value="${meccs.getTipus()}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="updateBtn">Módosítás</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégsem</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Törlés Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Meccs törlése</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Biztosan törölni szeretné a meccset?</p>
+            </div>
+            <div class="modal-footer">
+                <form id="deleteModalForm" th:action="@{/football/meccs/{deleteMeccsId}(deleteMeccsId=${deleteMeccsId})}" method="post">
+                    <input type="hidden" name="_method" value="delete"/>
+                    <input type="hidden" id="deleteMeccsId" name="id" th:value="${deleteMeccsId}">
+                    <button type="submit" class="btn btn-danger">Igen</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Nem</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Majd a külön a footer contentbe kitenni őket hogy ne legyen annyi kód duplikáció-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/meccs.js}"></script>
+</body>
+</html>

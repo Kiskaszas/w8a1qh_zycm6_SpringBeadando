@@ -27,7 +27,6 @@ public class Nezo implements Serializable {
     @Convert(converter = BooleanConverter.class)
     private boolean berletes;
 
-    // Egy néző több belépést is létrehozhat, így One-to-Many kapcsolat van
     @OneToMany(mappedBy = "nezo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Belepes> belepesek = new ArrayList<>();
 }

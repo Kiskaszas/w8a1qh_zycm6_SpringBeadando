@@ -30,7 +30,6 @@ public class Meccs implements Serializable {
     @Column(nullable = false)
     private String tipus;
 
-    // Egy meccsre több belépés is tartozhat, így One-to-Many kapcsolat van
     @OneToMany(mappedBy = "meccs", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Belepes> belepesek = new ArrayList<>();
 }

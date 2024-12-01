@@ -36,19 +36,29 @@ public class SecurityConfig {
                 .authenticationManager(authenticationManager)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
+                                // Swagger és API dokumentációhoz csak ADMIN hozzáférhet
                                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").hasRole("ADMIN")
-                                .requestMatchers("/", "/login", "/register", "/contact","/contact/send-message", "/css/**", "/js/**", "/img/**").permitAll()
+                                // Publikus végpontok
+                                .requestMatchers("/", "/login", "/register", "/contact", "/css/**", "/js/**", "/img/**").permitAll()
+                                // API végpontok Basic Auth védelmével
+                                .requestMatchers("/contact/send-message", "/api/**").authenticated()
                                 .anyRequest().authenticated()
                 )
+                // Form alapú bejelentkezés a webes felülethez
                 .formLogin(formLogin -> formLogin
                         .loginPage("/login")
                         .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
+                // Basic Auth az API hívásokhoz
+                .httpBasic(httpBasic -> httpBasic
+                        .authenticationEntryPoint(new MyBasicAuthenticationEntryPoint())
+                )
                 .logout(logout -> logout
                         .permitAll()
                         .logoutSuccessUrl("/")
                 )
+                // CSRF kikapcsolása API hívásokhoz
                 .csrf(csrf -> csrf.disable());
 
         return http.build();
